@@ -1,11 +1,25 @@
+# -*- python -*-
+# ex: set syntax=python:
+
+
+basedir = r'/var/lib/buildbot/psycobuild/master'
+
+rotateLength = 1000000
+maxRotatedFiles = None
+
+import os
+project_dir = os.path.dirname(os.path.abspath(__file__))
+configfile = os.path.join(project_dir, 'master.cfg')
+
+# copy the public_html structure if not existing
+if not os.path.exists(os.path.join(basedir, 'public_html')):
+    import shutil
+    shutil.copytree(
+        os.path.join(project_dir, 'public_html'),
+        os.path.join(basedir, 'public_html'))
 
 from twisted.application import service
 from buildbot.master import BuildMaster
-
-basedir = r'/home/piro/dev/psycobot'
-configfile = r'master.cfg'
-rotateLength = 1000000
-maxRotatedFiles = None
 
 application = service.Application('buildmaster')
 try:

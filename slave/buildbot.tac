@@ -1,20 +1,22 @@
 # -*- python -*-
 # ex: set syntax=python:
 
-from twisted.application import service
-from buildbot.slave.bot import BuildSlave
-
-basedir = r'/home/piro/dev/psycoslave/psycopg-linux'
-buildmaster_host = 'localhost'
-port = 9989
 slavename = 'ikki'
 passwd = 'pass'
+
+buildmaster_host = 'localhost'
+port = 9989
+
+basedir = r'/var/lib/buildbot/psycobuild/slave'
 keepalive = 600
 usepty = 0
 umask = None
 maxdelay = 300
 rotateLength = 1000000
 maxRotatedFiles = None
+
+from twisted.application import service
+from buildbot.slave.bot import BuildSlave
 
 application = service.Application('buildslave')
 try:
