@@ -1,0 +1,4 @@
+master/twistd.log
+master/twistd.pid
+slave/twistd.log
+slave/twistd.pid
