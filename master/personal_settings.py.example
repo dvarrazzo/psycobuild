@@ -1,0 +1,21 @@
+# This is a sample local configuration file for psycobuild master
+#
+# Copy this file as ``personal_settings.py`` and change its content to
+# configure the master/slaves you want to run.
+
+# The master expects a password for all the slaves configured.
+passwords = {
+    'ikki': 's3cret',
+}
+
+# the url the buildbot is available at
+buildbotUrl = "http://localhost:8010/"
+
+# The port on which the master listens for slaves connections
+slavePortnum = 9989
+
+# The port the webserver listens on.
+webStatusPort = 'tcp:8010:interface=127.0.0.1'
+
+# Set to False if you want to disallow the web server to force builds
+webAllowForce = True

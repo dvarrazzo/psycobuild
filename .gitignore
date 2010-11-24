@@ -1,4 +1,6 @@
 master/twistd.log
 master/twistd.pid
+master/personal_settings.py
 slave/twistd.log
 slave/twistd.pid
+slave/personal_settings.py

@@ -1,11 +1,12 @@
 # -*- python -*-
 # ex: set syntax=python:
 
-slavename = 'ikki'
-passwd = 'pass'
+# These parameters must be set in ``personal_settings.py``.
+slave_name = ''
+slave_password = ''
 
-buildmaster_host = 'localhost'
-port = 9989
+master_host = 'localhost'
+master_port = 9989
 
 basedir = r'/var/lib/buildbot/psycobuild/slave'
 keepalive = 600
@@ -14,6 +15,14 @@ umask = None
 maxdelay = 300
 rotateLength = 1000000
 maxRotatedFiles = None
+
+import os
+from twisted.python import log
+if os.path.exists('./personal_settings.py'):
+    execfile('./personal_settings.py')
+
+if not slave_name:
+    raise Exception("slave name not set")
 
 from twisted.application import service
 from buildbot.slave.bot import BuildSlave
@@ -28,7 +37,7 @@ try:
 except ImportError:
   # probably not yet twisted 8.2.0 and beyond, can't set log yet
   pass
-s = BuildSlave(buildmaster_host, port, slavename, passwd, basedir,
+s = BuildSlave(master_host, master_port, slave_name, slave_password, basedir,
                keepalive, usepty, umask=umask, maxdelay=maxdelay)
 s.setServiceParent(application)
 
