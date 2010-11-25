@@ -13,8 +13,8 @@ Quick start
 -----------
 
 - Checkout the code from ``git://github.com/dvarrazzo/psycobuild.git``
-- Copy ``slaves/personal_settings.py.example`` into
-  ``slaves/personal_settings.py`` and set a name for it.
+- Copy ``slaves/private_settings.py.example`` into
+  ``slaves/private_settings.py`` and set a name for it.
 - Configure the parameters of your slave into ``master/master.cfg``. See the
   ``ikki`` slave for an example of what to do. Use your slaves to create new
   builders: again, check what's already available in the file to see how.

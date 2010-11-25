@@ -1,6 +1,6 @@
 # This is a sample local configuration file for psycobuild master
 #
-# Copy this file as ``personal_settings.py`` and change its content to
+# Copy this file as ``private_settings.py`` and change its content to
 # configure the master/slaves you want to run.
 
 # The master expects a password for all the slaves configured.

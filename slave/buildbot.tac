@@ -1,7 +1,7 @@
 # -*- python -*-
 # ex: set syntax=python:
 
-# These parameters must be set in ``personal_settings.py``.
+# These parameters must be set in ``private_settings.py``.
 slave_name = ''
 slave_password = ''
 
@@ -18,8 +18,8 @@ maxRotatedFiles = None
 
 import os
 from twisted.python import log
-if os.path.exists('./personal_settings.py'):
-    execfile('./personal_settings.py')
+if os.path.exists('./private_settings.py'):
+    execfile('./private_settings.py')
 
 if not slave_name:
     raise Exception("slave name not set")
