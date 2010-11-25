@@ -1,13 +1,10 @@
 """Buildbot configuration file for Psycopg."""
 
-c = BuildmasterConfig = {}
-
-pcfg = {}
 import os
-from twisted.python import log
-if os.path.exists('./private_settings.py'):
-    log.msg("reading private settings file")
-    execfile('./private_settings.py', pcfg)
+
+import pcfg; reload(pcfg)
+
+c = BuildmasterConfig = {}
 
 
 ####### PROJECT IDENTITY
@@ -19,68 +16,10 @@ c['buildbotURL'] = pcfg.get('buildbotUrl', "http://localhost:8010/")
 
 ####### BUILDSLAVES
 
+import slaves; reload(slaves)
+
+c['slaves'] = [ slaves.ikki, slaves.win2k_vbox ]
 c['slavePortnum'] = pcfg.get('slavePortnum', 9989)
-
-from buildbot.buildslave import BuildSlave
-
-ikki = BuildSlave("ikki", pcfg['passwords']['ikki'],
-    max_builds=1,
-    properties = dict(
-        python_versions={
-            '2.4': {
-                'executable': "/usr/local/py24/bin/python2.4",
-            },
-            '2.6': {
-                'executable': "python2.6",
-                'pg_config': '/usr/local/pgsql/bin/pg_config',
-            },
-        },
-        pg_dsns={
-            '8.0': {
-                'PSYCOPG2_TESTDB': 'psycopg2_test',
-                'PSYCOPG2_TESTDB_HOST': 'localhost',
-                'PSYCOPG2_TESTDB_PORT': '54380',
-                },
-            '8.4': {
-                'PSYCOPG2_TESTDB': 'psycopg2_test',
-                'PSYCOPG2_TESTDB_HOST': 'localhost',
-                },
-            '9.0': {
-                'PSYCOPG2_TESTDB': 'psycopg2_test',
-                'PSYCOPG2_TESTDB_HOST': 'localhost',
-                'PSYCOPG2_TESTDB_PORT': '54390',
-                },
-        },
-        tested_pairs=[
-            ('2.4', '8.0'),
-            ('2.4', '8.4'),
-            ('2.6', '8.0'),
-            ('2.6', '8.4'),
-            ('2.6', '9.0'),
-        ]))
-
-win2k_vbox = BuildSlave("win2k-vbox", pcfg['passwords']['win2k-vbox'],
-    max_builds=1,
-    properties = dict(
-        python_versions={
-            '2.5': {
-                'executable': "C:/python25/python.exe",
-                'pg_config': 'C:/pgsql90/bin/pg_config.exe',
-                'compiler': 'mingw32',
-            },
-        },
-        pg_dsns={
-            '8.4': {
-                'PSYCOPG2_TESTDB': 'psycopg2_test',
-                'PSYCOPG2_TESTDB_HOST': '10.0.2.2',
-                'PSYCOPG2_TESTDB_USER': 'piro',
-                },
-        },
-        tested_pairs=[
-            ('2.5', '8.4'),
-        ]))
-
-c['slaves'] = [ ikki, win2k_vbox ]
 
 
 ####### CHANGESOURCES
@@ -109,7 +48,6 @@ repourl = "git://src.develer.com/users/piro/psycopg2.git"
 #repourl = "/home/piro/dev/psycopg2/"
 branch = "python2"
 
-from buildbot.locks import SlaveLock
 from buildbot.config import BuilderConfig
 from buildbot.process.factory import BuildFactory
 from buildbot.process.properties import WithProperties
@@ -152,24 +90,21 @@ def make_sdist(slave):
     return b
 
 def make_test_sdist(slave):
-    for pyver, pgver in slave.properties['tested_pairs']:
-        data = slave.properties['python_versions'][pyver]
-        dsn = slave.properties['pg_dsns'][pgver]
+    for py, pg in slave.properties['tested_pairs']:
+        py = slave.properties['pys'][py]
+        pg = slave.properties['pgs'][pg]
 
-        python = data.get("executable", "python")
-        pg_config = data.get("pg_config")
-        env = dsn.copy()
-
-        make = ["make", "PYTHON=%s" % python]
-        if pg_config:
-            make += ["PG_CONFIG=" + pg_config]
+        make = ["make", "PYTHON=%s" % py.executable]
+        if py.pg_config:
+            make += ["PG_CONFIG=" + py.pg_config]
 
         f = BuildFactory()
+        env = pg.get_test_env()
 
         # ensure to link to the intended libpq version
-        if pg_config:
+        if py.pg_config:
             f.addStep(SetProperty(
-                command="%s --libdir" % pg_config,
+                command="%s --libdir" % py.pg_config,
                 property="libdir"))
 
             env['LD_LIBRARY_PATH'] = WithProperties("%s", "libdir")
@@ -190,10 +125,10 @@ def make_test_sdist(slave):
             workdir=WithProperties("build/psycopg2-%s", "version")))
         f.addStep(Test(command=make + ["runtests"],
             workdir=WithProperties("build/psycopg2-%s", "version"),
-            env=env))
+            env=env, locks=[pg.get_lock()]))
 
         b = BuilderConfig(
-            name="test-py%s-pg%s-%s" % (pyver, pgver, slave.slavename),
+            name="test-py%s-pg%s-%s" % (py.name, pg.name, slave.slavename),
             slavename=slave.slavename,
             factory=f)
 
@@ -202,27 +137,26 @@ def make_test_sdist(slave):
 
 def make_wininst(slave):
     """Create the builder that makes a wininst."""
-    for pyver, data in slave.properties['python_versions'].iteritems():
-        name = "wininst-" + pyver
-        pyexe = data['executable']
-        pg_config = ('pg_config' in data
-            and ['--pg-config', data['pg_config']] or [])
-        compiler = ('compiler' in data
-            and ['--compiler', data['compiler']] or [])
+    for py in slave.properties['pys'].itervalues():
+        name = "wininst-" + py.name
+        pg_config = (py.pg_config
+            and ['--pg-config', py.pg_config] or [])
+        compiler = (py.compiler
+            and ['--compiler', py.compiler] or [])
 
         f = BuildFactory()
         f.addStep(Git(repourl=repourl, branch=branch))
         f.addStep(ShellCommand(
-            description="cleaning", descriptionDone="clean",
-            command=["del", "/S", "/Q", "dist\\*.exe"]))
+            description="clearing", descriptionDone="clean",
+            command=[py.executable, "-c",
+                "import shutil; shutil.rmtree('dist', ignore_errors=True)"]))
         f.addStep(ShellCommand(
             description="making wininst", descriptionDone="wininst",
-            command=[pyexe, "setup.py", "build_ext"]
+            command=[py.executable, "setup.py", "build_ext"]
                 + pg_config + compiler + ["bdist_wininst"]))
-        # TODO: brittle, coupled with the above cleaning operation
-        # that may probably fail if no file is found.
         f.addStep(SetProperty(
-            command=[pyexe, "-c", 'import os; print os.listdir("dist")[0]'],
+            command=[py.executable, "-c",
+                'import os; print os.listdir("dist")[0]'],
             property="installer"))
         f.addStep(FileUpload(
             slavesrc=WithProperties("dist/%s", "installer"),
@@ -244,18 +178,17 @@ def make_wininst(slave):
         yield b
 
 def make_test_wininst(slave):
-    for pyver, pgver in slave.properties['tested_pairs']:
-        data = slave.properties['python_versions'][pyver]
-        dsn = slave.properties['pg_dsns'][pgver]
+    for py, pg in slave.properties['tested_pairs']:
+        py = slave.properties['pys'][py]
+        pg = slave.properties['pgs'][pg]
 
-        name = "wininst-" + pyver
-        pyexe = data['executable']
-        env = dsn.copy()
+        name = "wininst-" + py.name
+        env = pg.get_test_env()
         env['PYTHONPATH'] = 'PLATLIB;PLATLIB\\psycopg2'
 
         # TODO: required for the libpq.dll, not for the static lib
-        if 'pg_config' in data:
-            env['PATH'] = os.path.dirname(data['pg_config'])
+        if py.pg_config:
+            env['PATH'] = os.path.dirname(py.pg_config)
 
         f = BuildFactory()
         f.addStep(FileDownload(
@@ -272,13 +205,13 @@ def make_test_wininst(slave):
             command=["C:/python26/python.exe", "-c", "import sys, zipfile; "
             "zipfile.ZipFile(sys.argv[1]).extractall()",
                 WithProperties("%s", 'installer')]))
-        f.addStep(Test(command=[pyexe,
+        f.addStep(Test(command=[py.executable,
             "PLATLIB/psycopg2/tests/__init__.py", "--verbose"],
-            env=env))
+            env=env, locks=[pg.get_lock()]))
 
         b = BuilderConfig(
             # TODO: should be more specific?
-            name="test-win-py%s-pg%s-%s" % (pyver, pgver, slave.slavename),
+            name="test-win-py%s-pg%s-%s" % (py.name, pg.name, slave.slavename),
             slavename=slave.slavename,
             factory=f)
 
@@ -293,11 +226,11 @@ def make_test_wininst(slave):
         yield b
 
 builders = c['builders'] = []
-builders.append(make_sdist(ikki))
-builders += list(make_test_sdist(ikki))
+builders.append(make_sdist(slaves.ikki))
+builders += list(make_test_sdist(slaves.ikki))
 
-builders += list(make_wininst(win2k_vbox))
-builders += list(make_test_wininst(win2k_vbox))
+builders += list(make_wininst(slaves.win2k_vbox))
+builders += list(make_test_wininst(slaves.win2k_vbox))
 
 ####### STATUS TARGETS
 
