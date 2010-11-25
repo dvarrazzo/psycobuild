@@ -7,7 +7,7 @@ from buildbot.locks import MasterLock
 class PythonInstance(object):
     """Represent a Python installation on a slave."""
     def __init__(self, name, executable='python',
-            pg_config=None, compiler=None):
+            pg_config=None, compiler=None, green_libs=()):
         # A short name to identify this install on the slave
         # E.g. 2.6, 2.4_d
         self.name = name
@@ -20,7 +20,11 @@ class PythonInstance(object):
         self.pg_config = pg_config
 
         # The compiler to use to build Psycopg, if not the default
-        self.compiler=compiler
+        self.compiler = compiler
+
+        # Green libraries to test against.
+        # If none defined test against the wait_select().
+        self.green_libs = green_libs
 
     def __repr__(self):
         d = self.__dict__.copy()

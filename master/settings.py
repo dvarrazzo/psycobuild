@@ -127,6 +127,16 @@ def make_test_sdist(slave):
             workdir=WithProperties("build/psycopg2-%s", "version"),
             env=env, locks=[pg.get_lock()]))
 
+        for lib in py.green_libs or ['1']:
+            genv=env.copy()
+            genv['PSYCOPG2_TEST_GREEN'] = lib
+            libname = lib == '1' and 'green' or lib
+            f.addStep(Test(command=make + ["runtests"],
+                description="%s testing" % libname,
+                descriptionDone="%s test" % libname,
+                workdir=WithProperties("build/psycopg2-%s", "version"),
+                env=genv, locks=[pg.get_lock()]))
+
         b = BuilderConfig(
             name="test-py%s-pg%s-%s" % (py.name, pg.name, slave.slavename),
             slavename=slave.slavename,
@@ -208,6 +218,16 @@ def make_test_wininst(slave):
         f.addStep(Test(command=[py.executable,
             "PLATLIB/psycopg2/tests/__init__.py", "--verbose"],
             env=env, locks=[pg.get_lock()]))
+
+        for lib in py.green_libs or ['1']:
+            genv=env.copy()
+            genv['PSYCOPG2_TEST_GREEN'] = lib
+            libname = lib == '1' and 'green' or lib
+            f.addStep(Test(command=[py.executable,
+                "PLATLIB/psycopg2/tests/__init__.py", "--verbose"],
+                description="%s testing" % libname,
+                descriptionDone="%s test" % libname,
+                env=genv, locks=[pg.get_lock()]))
 
         b = BuilderConfig(
             # TODO: should be more specific?
