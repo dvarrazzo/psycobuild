@@ -9,7 +9,7 @@ maxRotatedFiles = None
 
 import os
 project_dir = os.path.dirname(os.path.abspath(__file__))
-configfile = os.path.join(project_dir, 'master.cfg')
+configfile = os.path.join(project_dir, 'settings.py')
 
 # copy the public_html structure if not existing
 if not os.path.exists(os.path.join(basedir, 'public_html')):

@@ -1,4 +1,4 @@
-# ex: set filetype=python:
+"""Buildbot configuration file for Psycopg."""
 
 c = BuildmasterConfig = {}
 
