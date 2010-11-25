@@ -90,40 +90,62 @@ def make_sdist(slave):
     return b
 
 def make_test_sdist(slave):
-    for py, pg in slave.properties['tested_pairs']:
+    builders = {}   # py name -> builder
+
+    for py, pg in sorted(slave.properties['tested_pairs']):
+
         py = slave.properties['pys'][py]
         pg = slave.properties['pgs'][pg]
 
-        make = ["make", "PYTHON=%s" % py.executable]
-        if py.pg_config:
-            make += ["PG_CONFIG=" + py.pg_config]
+        # Download and build only once per python instance
+        if py.name in builders:
+            b = builders[py.name]
+            f = b.factory
 
-        f = BuildFactory()
+        else:
+            f = BuildFactory()
+            b = builders[py.name] = BuilderConfig(
+                name="test-py%s-%s" % (py.name, slave.slavename),
+                slavename=slave.slavename,
+                factory=f)
+            sdist_trigger.builderNames.append(b.name)
+
+            make = ["make", "PYTHON=%s" % py.executable]
+            if py.pg_config:
+                make += ["PG_CONFIG=" + py.pg_config]
+
+            f.addStep(FileDownload(
+                mastersrc=WithProperties(
+                    "%s/public_html/dist/psycopg2-%%s.tar.gz" % basedir,
+                    'version'),
+                slavedest=WithProperties("psycopg2-%s.tar.gz", 'version')))
+            f.addStep(ShellCommand(
+                description="clearing", descriptionDone="clear",
+                command=["rm", "-rf",
+                    WithProperties("psycopg2-%s", "version")]))
+            f.addStep(ShellCommand(
+                description="unpacking", descriptionDone="unpack",
+                command=["tar", "xzvf",
+                    WithProperties("psycopg2-%s.tar.gz", 'version')]))
+            f.addStep(Compile(command=make + ["package"],
+                workdir=WithProperties("build/psycopg2-%s", "version")))
+
+            if py.pg_config:
+                f.addStep(SetProperty(
+                    command="%s --libdir" % py.pg_config,
+                    property="libdir"))
+
+        # Add tests on this factory
+
+        # Make it found the libpq we compiled against
         env = pg.get_test_env()
-
-        # ensure to link to the intended libpq version
         if py.pg_config:
-            f.addStep(SetProperty(
-                command="%s --libdir" % py.pg_config,
-                property="libdir"))
-
             env['LD_LIBRARY_PATH'] = WithProperties("%s", "libdir")
 
-        f.addStep(FileDownload(
-            mastersrc=WithProperties(
-                "%s/public_html/dist/psycopg2-%%s.tar.gz" % basedir, 'version'),
-            slavedest=WithProperties("psycopg2-%s.tar.gz", 'version')))
-        f.addStep(ShellCommand(
-            description="clearing", descriptionDone="clear",
-            command=["rm", "-rf",
-                WithProperties("psycopg2-%s", "version")]))
-        f.addStep(ShellCommand(
-            description="unpacking", descriptionDone="unpack",
-            command=["tar", "xzvf",
-                WithProperties("psycopg2-%s.tar.gz", 'version')]))
-        f.addStep(Compile(command=make + ["package"],
-            workdir=WithProperties("build/psycopg2-%s", "version")))
+        # ensure to link to the intended libpq version
         f.addStep(Test(command=make + ["runtests"],
+            description="testing %s" % pg.name,
+            descriptionDone="test %s" % pg.name,
             workdir=WithProperties("build/psycopg2-%s", "version"),
             env=env, locks=[pg.get_lock()]))
 
@@ -132,17 +154,12 @@ def make_test_sdist(slave):
             genv['PSYCOPG2_TEST_GREEN'] = lib
             libname = lib == '1' and 'green' or lib
             f.addStep(Test(command=make + ["runtests"],
-                description="%s testing" % libname,
-                descriptionDone="%s test" % libname,
+                description="%s testing %s" % (libname, pg.name),
+                descriptionDone="%s test %s" % (libname, pg.name),
                 workdir=WithProperties("build/psycopg2-%s", "version"),
                 env=genv, locks=[pg.get_lock()]))
 
-        b = BuilderConfig(
-            name="test-py%s-pg%s-%s" % (py.name, pg.name, slave.slavename),
-            slavename=slave.slavename,
-            factory=f)
-
-        sdist_trigger.builderNames.append(b.name)
+    for name, b in sorted(builders.iteritems()):
         yield b
 
 def make_wininst(slave):
@@ -188,35 +205,63 @@ def make_wininst(slave):
         yield b
 
 def make_test_wininst(slave):
-    for py, pg in slave.properties['tested_pairs']:
+    builders = {}  # py.name -> builder
+
+    for py, pg in sorted(slave.properties['tested_pairs']):
+
         py = slave.properties['pys'][py]
         pg = slave.properties['pgs'][pg]
 
-        name = "wininst-" + py.name
+        # Download and build only once per python instance
+        if py.name in builders:
+            b = builders[py.name]
+            f = b.factory
+        else:
+            env = {}
+            env['PYTHONPATH'] = 'PLATLIB;PLATLIB\\psycopg2'
+
+            # TODO: required for the libpq.dll, not for the static lib
+            if py.pg_config:
+                env['PATH'] = os.path.dirname(py.pg_config)
+
+            f = BuildFactory()
+            b = BuilderConfig(
+                # TODO: should be more specific?
+                name="test-win-py%s-%s"
+                    % (py.name, slave.slavename),
+                slavename=slave.slavename,
+                factory=f,
+                env=env)
+
+            builders[py.name] = b
+
+            f.addStep(FileDownload(
+                mastersrc=WithProperties(
+                    "%s/public_html/dist/%%s" % basedir, 'installer'),
+                slavedest=WithProperties("%s", 'installer')))
+            f.addStep(ShellCommand(
+                description="unpacking", descriptionDone="unpack",
+                # TODO: replace with a portable script
+                command=["C:/python26/python.exe", "-c", "import sys, zipfile; "
+                "zipfile.ZipFile(sys.argv[1]).extractall()",
+                    WithProperties("%s", 'installer')]))
+
+            # Be ready for a package with the required characteristics
+            tname = "wininst-" + py.name
+            for t in c['schedulers']:
+                if t.name == tname:
+                    t.builderNames.append(b.name)
+                    break
+            else:
+                raise Exception("can't find trigger %s" % tname)
+
+        # Test against the different pg servers.
         env = pg.get_test_env()
-        env['PYTHONPATH'] = 'PLATLIB;PLATLIB\\psycopg2'
 
-        # TODO: required for the libpq.dll, not for the static lib
-        if py.pg_config:
-            env['PATH'] = os.path.dirname(py.pg_config)
-
-        f = BuildFactory()
-        f.addStep(FileDownload(
-            mastersrc=WithProperties(
-                "%s/public_html/dist/%%s" % basedir, 'installer'),
-            slavedest=WithProperties("%s", 'installer')))
-        # TODO: clear?
-#        f.addStep(ShellCommand(
-#            description="clearing", descriptionDone="clear",
-#            command=["del", "/S", "/Q", "PLATLIB"]))
-        f.addStep(ShellCommand(
-            description="unpacking", descriptionDone="unpack",
-            # TODO: replace with a portable script
-            command=["C:/python26/python.exe", "-c", "import sys, zipfile; "
-            "zipfile.ZipFile(sys.argv[1]).extractall()",
-                WithProperties("%s", 'installer')]))
         f.addStep(Test(command=[py.executable,
             "PLATLIB/psycopg2/tests/__init__.py", "--verbose"],
+                description="testing %s" % pg.name,
+                descriptionDone="test %s" % pg.name,
             env=env, locks=[pg.get_lock()]))
 
         for lib in py.green_libs or ['1']:
@@ -225,25 +270,13 @@ def make_test_wininst(slave):
             libname = lib == '1' and 'green' or lib
             f.addStep(Test(command=[py.executable,
                 "PLATLIB/psycopg2/tests/__init__.py", "--verbose"],
-                description="%s testing" % libname,
-                descriptionDone="%s test" % libname,
+                description="%s testing %s" % (libname, pg.name),
+                descriptionDone="%s test %s" % (libname, pg.name),
                 env=genv, locks=[pg.get_lock()]))
 
-        b = BuilderConfig(
-            # TODO: should be more specific?
-            name="test-win-py%s-pg%s-%s" % (py.name, pg.name, slave.slavename),
-            slavename=slave.slavename,
-            factory=f)
-
-        # Be ready for a package with the required characteristics
-        for t in c['schedulers']:
-            if t.name == name:
-                t.builderNames.append(b.name)
-                break
-        else:
-            raise Exception("can't find trigger %s" % name)
-
+    for name, b in sorted(builders.iteritems()):
         yield b
+
 
 builders = c['builders'] = []
 builders.append(make_sdist(slaves.ikki))
