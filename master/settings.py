@@ -143,7 +143,7 @@ def make_test_sdist(slave):
             env['LD_LIBRARY_PATH'] = WithProperties("%s", "libdir")
 
         # ensure to link to the intended libpq version
-        f.addStep(Test(command=make + ["runtests"],
+        f.addStep(Test(command=make + ["check"],
             description="testing %s" % pg.name,
             descriptionDone="test %s" % pg.name,
             workdir=WithProperties("build/psycopg2-%s", "version"),
@@ -153,7 +153,7 @@ def make_test_sdist(slave):
             genv=env.copy()
             genv['PSYCOPG2_TEST_GREEN'] = lib
             libname = lib == '1' and 'green' or lib
-            f.addStep(Test(command=make + ["runtests"],
+            f.addStep(Test(command=make + ["check"],
                 description="%s testing %s" % (libname, pg.name),
                 descriptionDone="%s test %s" % (libname, pg.name),
                 workdir=WithProperties("build/psycopg2-%s", "version"),
