@@ -35,6 +35,24 @@ add_test(ikki, '2.6', '8.4')
 add_test(ikki, '2.6', '9.0')
 
 
+# CentOS 5.5 x86_64 failed the 2.3.0 build
+
+centos_55_64  = create_slave("centos-55-64", max_builds=1)
+
+add_python(centos_55_64, PythonInstance('2.4',
+    executable="python2.4", ))
+add_postgres(centos_55_64, PostgresInstance('7.4', 'ikki-7.4',
+    host='192.168.1.4', user='piro', port=54374))
+add_postgres(centos_55_64, PostgresInstance('8.0', 'ikki-8.0',
+    host='192.168.1.4', user='piro', port=54380))
+add_postgres(centos_55_64, PostgresInstance('8.4', 'ikki-8.4',
+    host='192.168.1.4', user='piro', ))
+
+add_test(centos_55_64, '2.4', '7.4')
+add_test(centos_55_64, '2.4', '8.0')
+add_test(centos_55_64, '2.4', '8.4')
+
+
 # a win2k vm on ikki, mostly used to test psycobuild itself
 
 win2k_vbox = create_slave("win2k-vbox", max_builds=1)
