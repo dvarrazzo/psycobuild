@@ -1,6 +1,3 @@
-master/twistd.log*
-master/twistd.pid
-master/private_settings.py
-slave/twistd.log*
-slave/twistd.pid
-slave/private_settings.py
+twistd.log*
+twistd.pid
+private_settings.py

@@ -2,7 +2,7 @@
 
 import os
 
-import pcfg; reload(pcfg)
+from psycobuild import pcfg; reload(pcfg)
 
 c = BuildmasterConfig = {}
 
@@ -16,7 +16,7 @@ c['buildbotURL'] = pcfg.get('buildbotUrl', "http://localhost:8010/")
 
 ####### BUILDSLAVES
 
-import slaves; reload(slaves)
+from psycobuild import slaves; reload(slaves)
 
 c['slaves'] = [ slaves.ikki, slaves.win2k_vbox, slaves.centos_55_64 ]
 c['slavePortnum'] = pcfg.get('slavePortnum', 9989)

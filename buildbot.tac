@@ -2,7 +2,7 @@
 # ex: set syntax=python:
 
 
-basedir = r'/var/lib/buildbot/psycobuild/master'
+basedir = r'/var/lib/buildbot/psycobuild'
 
 rotateLength = 1000000
 maxRotatedFiles = None
