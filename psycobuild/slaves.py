@@ -19,13 +19,13 @@ add_python(ikki, PythonInstance('2.6',
     pg_config='/usr/local/pgsql/bin/pg_config', ))
 
 add_postgres(ikki, PostgresInstance('7.4', 'ikki-7.4',
-    host='localhost', port=54374, ))
+    host='localhost', port=54374, user='piro', ))
 add_postgres(ikki, PostgresInstance('8.0', 'ikki-8.0',
-    host='localhost', port=54380, ))
+    host='localhost', port=54380, user='piro', ))
 add_postgres(ikki, PostgresInstance('8.4', 'ikki-8.4',
-    host='localhost', ))
+    host='localhost',user='piro',  ))
 add_postgres(ikki, PostgresInstance('9.0', 'ikki-9.0',
-    host='localhost', port=54390, ))
+    host='localhost', port=54390, user='piro', ))
 
 add_test(ikki, '2.4', '8.0')
 add_test(ikki, '2.4', '8.4')
