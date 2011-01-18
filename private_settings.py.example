@@ -19,3 +19,7 @@ webStatusPort = 'tcp:8010:interface=127.0.0.1'
 
 # Set to False if you want to disallow the web server to force builds
 webAllowForce = True
+
+# The list of users allowed to force a build from the web interface
+# If not set no auth is required
+# webUsers = [('name', 'pass')]

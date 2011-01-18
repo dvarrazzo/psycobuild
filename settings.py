@@ -292,10 +292,14 @@ builders += list(make_test_wininst(slaves.win2k_vbox))
 
 c['status'] = []
 
-from buildbot.status import html
 http_port = pcfg.get('webStatusPort', 'tcp:8010:interface=127.0.0.1')
+web_users = pcfg.get('webUsers')
 allowForce = pcfg.get('webAllowForce', True)
-c['status'].append(html.WebStatus(http_port=http_port, allowForce=allowForce))
+
+from buildbot.status import html
+from buildbot.status.web.auth import BasicAuth
+c['status'].append(html.WebStatus(http_port=http_port,  allowForce=allowForce,
+    auth=web_users and BasicAuth(web_users) or None))
 
 
 ####### DEBUGGING OPTIONS
