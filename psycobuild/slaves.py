@@ -74,3 +74,37 @@ add_test(win2k_vbox, '2.5', '8.4')
 add_test(win2k_vbox, '2.5', '9.0')
 
 
+# Two slaves to test an exhaustive combination of PG/Py
+
+pyvers = [ '24', '25', '26', '27', '31', '32']
+pgvers = [ '74', '80', '81', '82', '83', '84', '90', '91' ]
+
+def dotted(s):
+    """ '24' -> '2.4' """
+    return s[0] + '.' + s[1]
+
+def all_pg_py_combos(slave):
+    for pyver in pyvers:
+        add_python(slave,
+            PythonInstance(dotted(pyver),
+                executable='/usr/local/py%s/bin/python%s'
+                    % (pyver, pyver[0] == '3' and '3' or ''),
+                pg_config='/usr/local/pg90/bin/pg_config',))
+
+    for pgver in pgvers:
+        add_postgres(slave,
+            PostgresInstance(dotted(pgver),
+            'testdb-' + pgver,
+            host='192.168.56.101',
+            port='543' + pgver,
+            user='psycopg', ))
+
+    for pyver in pyvers:
+        for pgver in pgvers:
+            add_test(slave, dotted(pyver), dotted(pgver))
+
+    return slave
+
+ubuntu32 = all_pg_py_combos(create_slave("ubuntu32", max_builds=1))
+ubuntu64 = all_pg_py_combos(create_slave("ubuntu64", max_builds=1))
+
