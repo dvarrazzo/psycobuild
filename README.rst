@@ -90,3 +90,22 @@ with a master of your own. You can change the values later in the
 ``buildbot.tac`` file. In order to allow the slave to connect to your local
 master you must add the slave password to the ``private_settings.py`` file.
 
+
+Starting the slave with upstart
+-------------------------------
+
+In order to have your slave automatically start with your machine, you may use
+an upstart (such as ``/etc/init/psycoslave.conf``) script similar to this one::
+
+    description     "psycopg buildbot slave"
+
+    start on runlevel [2345]
+    stop on runlevel [!2345]
+
+    respawn
+
+    script
+        cd /var/lib/buildbot/psycoslave
+        sudo -u buildbot twistd --nodaemon --no_save -y buildbot.tac
+    end script
+
