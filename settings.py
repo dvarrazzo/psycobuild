@@ -46,7 +46,7 @@ c['schedulers'].append(sdist_trigger)
 
 repourl = "git://src.develer.com/users/piro/psycopg2.git"
 #repourl = "/home/piro/dev/psycopg2/"
-branch = "python2"
+branch = "python3"
 
 from buildbot.config import BuilderConfig
 from buildbot.process.factory import BuildFactory
