@@ -74,6 +74,11 @@ add_test(win2k_vbox, '2.5', '8.4')
 add_test(win2k_vbox, '2.5', '9.0')
 
 
+# Maya will be the official sdist builder
+
+maya = create_slave("maya", max_builds=1)
+
+
 # Two slaves to test an exhaustive combination of PG/Py
 
 pyvers = [ '24', '25', '26', '27', '31', '32']

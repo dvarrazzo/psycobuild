@@ -18,7 +18,7 @@ c['buildbotURL'] = pcfg.get('buildbotUrl', "http://localhost:8010/")
 
 from psycobuild import slaves; reload(slaves)
 
-c['slaves'] = [ slaves.ikki, slaves.win2k_vbox, slaves.centos_55_64, slaves.ubuntu32, slaves.ubuntu64 ]
+c['slaves'] = [ slaves.maya, slaves.win2k_vbox, slaves.centos_55_64, slaves.ubuntu32, slaves.ubuntu64 ]
 c['slavePortnum'] = pcfg.get('slavePortnum', 9989)
 
 
@@ -279,8 +279,8 @@ def make_test_wininst(slave):
 
 
 builders = c['builders'] = []
-builders.append(make_sdist(slaves.ikki))
-# builders += list(make_test_sdist(slaves.ikki))
+builders.append(make_sdist(slaves.maya))
+
 builders += list(make_test_sdist(slaves.ubuntu32))
 builders += list(make_test_sdist(slaves.ubuntu64))
 builders += list(make_test_sdist(slaves.centos_55_64))
