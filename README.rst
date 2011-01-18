@@ -60,7 +60,9 @@ Creating a slave
 ----------------
 
 Because all the configuration is in the master, the slave itself has little
-configuration: it only knows how to reach the master.
+configuration: it only knows how to reach the master. If you only need a slave
+you don't even need the buildbot package: you may use ``easy_install
+buildbot-slave`` to get only the slave part.
 
 - Create an unprivileged user ``buildbot``.
 - Create a dir ``/var/lib/buildbot`` and set ``buildbot`` as owner.
@@ -73,11 +75,15 @@ configuration: it only knows how to reach the master.
 
     sudo -u buildbot buildbot create-slave /var/lib/buildbot/NAME maya.initd.org:49989 NAME PASSWORD
 
-- Add informations to ``admin`` and ``host`` in the ``info`` dir
-- Rename ``Makefile.sample`` to ``Makefile``
+  (the command may be different using the ``buildbot-slave`` package).
 
-To run the slave you can use ``sudo -u buildbot make start`` in the slave
-directory. The slave actions are logged in ``twistd.log``.
+- Add informations to ``admin`` and ``host`` in the ``info`` dir
+
+To run the slave you can use::
+
+    sudo -u buildbot twistd --nodaemon --no_save -y buildbot.tac
+
+in the slave directory. The slave actions are logged in ``twistd.log``.
 
 You can use ``localhost:9899`` instead of ``maya`` in order to test the slave
 with a master of your own. You can change the values later in the
