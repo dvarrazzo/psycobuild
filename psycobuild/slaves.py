@@ -49,8 +49,8 @@ add_postgres(centos_55_64, PostgresInstance('9.0', 'testdb-90',
     host='192.168.56.101', user='psycopg', port=54390))
 
 add_test(centos_55_64, '2.4', '7.4')
-add_test(centos_55_64, '2.4', '8.0')
 add_test(centos_55_64, '2.4', '8.4')
+add_test(centos_55_64, '2.4', '9.0')
 
 
 # a win2k vm on ikki, mostly used to test psycobuild itself
