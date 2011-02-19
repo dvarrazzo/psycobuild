@@ -1,10 +1,13 @@
-# -*- makefile -*-
+# control makefile for psycobuild master
 
-# This is a simple makefile which lives in a buildmaster/buildslave
-# directory (next to the buildbot.tac file). It allows you to start/stop the
-# master or slave by doing 'make start' or 'make stop'.
+PYTHON ?= python
 
-# The 'reconfig' target will tell a buildmaster to reload its config file.
+MASTER_DIR ?= $(shell grep -E '^basedir'  buildbot.tac  | sed -e "s/.*'\(.*\)'/\1/")
+
+BB_VER=0.8.2
+PY_VER = $(shell $(PYTHON) -c "import sys; print '%d.%d' % sys.version_info[:2]")
+
+BUILDBOT ?= "lib/buildbot-$(BB_VER)-py$(PY_VER).egg/EGG-INFO/scripts/buildbot"
 
 start:
 	twistd --no_save -y buildbot.tac
@@ -17,3 +20,10 @@ reconfig:
 
 log:
 	tail -f twistd.log
+
+create-master:
+	$(PYTHON) $(BUILDBOT) create-master $(MASTER_DIR)
+
+install-buildbot:
+	mkdir -p lib
+	PYTHONPATH=lib easy_install -Z -d lib buildbot==$(BB_VER)

@@ -2,7 +2,7 @@
 # ex: set syntax=python:
 
 
-basedir = r'/var/lib/buildbot/psycobuild'
+basedir = r'/var/lib/buildbot/psycobuild/master'
 
 rotateLength = 1000000
 maxRotatedFiles = None
@@ -10,13 +10,6 @@ maxRotatedFiles = None
 import os
 project_dir = os.path.dirname(os.path.abspath(__file__))
 configfile = os.path.join(project_dir, 'settings.py')
-
-# copy the public_html structure if not existing
-if not os.path.exists(os.path.join(basedir, 'public_html')):
-    import shutil
-    shutil.copytree(
-        os.path.join(project_dir, 'public_html'),
-        os.path.join(basedir, 'public_html'))
 
 from twisted.application import service
 from buildbot.master import BuildMaster
