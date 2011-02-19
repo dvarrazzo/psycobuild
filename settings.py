@@ -1,5 +1,9 @@
 """Buildbot configuration file for Psycopg."""
 
+repourl = "git://src.develer.com/users/piro/psycopg2.git"
+#repourl = "/home/piro/dev/psycopg2/"
+branch = "devel"
+
 import os
 
 from psycobuild import pcfg; reload(pcfg)
@@ -24,29 +28,33 @@ c['slavePortnum'] = pcfg.get('slavePortnum', 9989)
 
 ####### CHANGESOURCES
 
-from buildbot.changes.pb import PBChangeSource
+c['change_source'] = []
 
-c['change_source'] = PBChangeSource()
+from buildbot.changes.pb import PBChangeSource
+c['change_source'].append(PBChangeSource())
+
+from buildbot.changes.gitpoller import GitPoller
+c['change_source'].append(GitPoller(repourl, branch=branch))
 
 
 ####### SCHEDULERS
 
+c['schedulers'] = []
+
 from buildbot.scheduler import Scheduler, Triggerable
 
-c['schedulers'] = []
+# Make a new sdist build wnen a change arrives
+changes_scheduler = Scheduler(name='source-changes', builderNames=[],
+    branch=branch, treeStableTimer=60)
+c['schedulers'].append(changes_scheduler)
 
 # Run the test after the sdist is ready.
 sdist_trigger = Triggerable(name='test-sdist', builderNames=[])
-
 c['schedulers'].append(sdist_trigger)
 
 
 
 ####### BUILDERS
-
-repourl = "git://src.develer.com/users/piro/psycopg2.git"
-#repourl = "/home/piro/dev/psycopg2/"
-branch = "devel"
 
 from buildbot.config import BuilderConfig
 from buildbot.process.factory import BuildFactory
@@ -86,6 +94,9 @@ def make_sdist(slave):
         name="sdist",
         slavename=slave.slavename,
         factory=f)
+
+    # Run this builder upon changes
+    changes_scheduler.builderNames.append('sdist')
 
     return b
 
