@@ -41,16 +41,16 @@ centos_55_64  = create_slave("centos-55-64", max_builds=1)
 
 add_python(centos_55_64, PythonInstance('2.4',
     executable="python2.4", ))
-add_postgres(centos_55_64, PostgresInstance('7.4', 'ikki-7.4',
-    host='192.168.1.4', user='piro', port=54374))
-add_postgres(centos_55_64, PostgresInstance('8.0', 'ikki-8.0',
-    host='192.168.1.4', user='piro', port=54380))
-add_postgres(centos_55_64, PostgresInstance('8.4', 'ikki-8.4',
-    host='192.168.1.4', user='piro', ))
+add_postgres(centos_55_64, PostgresInstance('7.4', 'testdb-74',
+    host='192.168.56.101', user='psycopg', port=54374))
+add_postgres(centos_55_64, PostgresInstance('8.4', 'testdb-84',
+    host='192.168.56.101', user='psycopg', port=54384))
+add_postgres(centos_55_64, PostgresInstance('9.0', 'testdb-90',
+    host='192.168.56.101', user='psycopg', port=54390))
 
 add_test(centos_55_64, '2.4', '7.4')
-add_test(centos_55_64, '2.4', '8.0')
 add_test(centos_55_64, '2.4', '8.4')
+add_test(centos_55_64, '2.4', '9.0')
 
 
 # a win2k vm on ikki, mostly used to test psycobuild itself
