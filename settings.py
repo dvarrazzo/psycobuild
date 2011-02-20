@@ -1,7 +1,6 @@
 """Buildbot configuration file for Psycopg."""
 
-repourl = "git://src.develer.com/users/piro/psycopg2.git"
-#repourl = "/home/piro/dev/psycopg2/"
+repourl = "git://github.com/dvarrazzo/psycopg.git"
 branch = "devel"
 
 import os
