@@ -42,11 +42,11 @@ centos_55_64  = create_slave("centos-55-64", max_builds=1)
 add_python(centos_55_64, PythonInstance('2.4',
     executable="python2.4", ))
 add_postgres(centos_55_64, PostgresInstance('7.4', 'testdb-74',
-    host='192.168.56.101', user='psycopg', port=54374))
+    host='192.168.56.50', user='psycopg', port=54374))
 add_postgres(centos_55_64, PostgresInstance('8.4', 'testdb-84',
-    host='192.168.56.101', user='psycopg', port=54384))
+    host='192.168.56.50', user='psycopg', port=54384))
 add_postgres(centos_55_64, PostgresInstance('9.0', 'testdb-90',
-    host='192.168.56.101', user='psycopg', port=54390))
+    host='192.168.56.50', user='psycopg', port=54390))
 
 add_test(centos_55_64, '2.4', '7.4')
 add_test(centos_55_64, '2.4', '8.4')
@@ -100,7 +100,7 @@ def all_pg_py_combos(slave):
         add_postgres(slave,
             PostgresInstance(dotted(pgver),
             'testdb-' + pgver,
-            host='192.168.56.101',
+            host='192.168.56.50',
             port='543' + pgver,
             user='psycopg', ))
 
