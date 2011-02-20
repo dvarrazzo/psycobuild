@@ -8,10 +8,11 @@ If you are interested in providing a build slave, for example if you want to
 be sure that Psycopg works as expected on your platform or with your server
 configuration, you can provide a specific build slave.
 
-The code and the examples are tested for buildbot 0.7.12: you can install it
-and its dependencies using::
+The code is currently tested with *buildbot 0.8.3p1*. You can try your luck
+with a newer version, but if you are not into gambling you can specify the
+release and install its dependencies using::
 
-    sudo easy_install buildbot==0.7.12
+    sudo easy_install buildbot==0.8.3p1
 
 In order to create a slave you will need to:
 
