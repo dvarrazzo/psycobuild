@@ -102,10 +102,10 @@ def make_sdist(slave):
 def make_test_sdist(slave):
     builders = {}   # py name -> builder
 
-    for py, pg in sorted(slave.properties['tested_pairs']):
+    for py, pg in sorted(slave.tested_pairs):
 
-        py = slave.properties['pys'][py]
-        pg = slave.properties['pgs'][pg]
+        py = slave.pys[py]
+        pg = slave.pgs[pg]
 
         # Download and build only once per python instance
         if py.name in builders:
@@ -174,7 +174,7 @@ def make_test_sdist(slave):
 
 def make_wininst(slave):
     """Create the builder that makes a wininst."""
-    for py in slave.properties['pys'].itervalues():
+    for py in slave.pys.itervalues():
         name = "wininst-" + py.name
         pg_config = (py.pg_config
             and ['--pg-config', py.pg_config] or [])
@@ -217,10 +217,10 @@ def make_wininst(slave):
 def make_test_wininst(slave):
     builders = {}  # py.name -> builder
 
-    for py, pg in sorted(slave.properties['tested_pairs']):
+    for py, pg in sorted(slave.tested_pairs):
 
-        py = slave.properties['pys'][py]
-        pg = slave.properties['pgs'][pg]
+        py = slave.pys[py]
+        pg = slave.pgs[pg]
 
         # Download and build only once per python instance
         if py.name in builders:

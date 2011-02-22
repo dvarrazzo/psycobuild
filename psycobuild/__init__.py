@@ -90,29 +90,27 @@ def create_slave(name, **kwargs):
     import pcfg
     passwd = pcfg.get_password(name)
 
-    props = kwargs.setdefault('properties', {})
-    props['pys'] = {}
-    props['pgs'] = {}
-    props['tested_pairs'] = []
-
     slave = BuildSlave(name, passwd, **kwargs)
+    slave.pys = {}
+    slave.pgs = {}
+    slave.tested_pairs = []
     return slave
 
 
 def add_python(slave, py):
-    pys = slave.properties['pys']
+    pys = slave.pys
     assert py.name not in pys
     pys[py.name] = py
 
 def add_postgres(slave, pg):
-    pgs = slave.properties['pgs']
+    pgs = slave.pgs
     assert pg.name not in pgs
     pgs[pg.name] = pg
 
 def add_test(slave, py_name, pg_name):
-    assert py_name in slave.properties['pys']
-    assert pg_name in slave.properties['pgs']
-    pairs = slave.properties['tested_pairs']
+    assert py_name in slave.pys
+    assert pg_name in slave.pgs
+    pairs = slave.tested_pairs
     assert (py_name, pg_name) not in pairs
     pairs.append((py_name, pg_name))
 
