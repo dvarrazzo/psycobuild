@@ -88,7 +88,11 @@ def all_pg_py_combos(slave):
             PythonInstance(dotted(pyver),
                 executable='/usr/local/py%s/bin/python%s'
                     % (pyver, pyver[0] == '3' and '3' or ''),
-                pg_config='/usr/local/pg90/bin/pg_config',))
+                # use the system pg_config
+                # from psycopg 2.4.1 we can use 8.4 to talk to 9.0
+                # without breaking bytea
+                # pg_config='/usr/local/pg90/bin/pg_config',
+                ))
 
     for pgver in pgvers:
         add_postgres(slave,
