@@ -94,7 +94,13 @@ def all_pg_py_combos(slave):
                 # pg_config='/usr/local/pg90/bin/pg_config',
                 ))
 
-    for pgver in pgvers:
+    # increase concurrency by using databases in different orders
+    if slave.slavename == 'ubuntu64':
+        use_pgvers = pgvers[len(pgvers) // 2:] + pgvers[:len(pgvers) // 2]
+    else:
+        use_pgvers = pgvers
+
+    for pgver in use_pgvers:
         add_postgres(slave,
             PostgresInstance(dotted(pgver),
             'testdb-' + pgver,
