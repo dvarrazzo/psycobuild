@@ -109,7 +109,7 @@ def all_pg_py_combos(slave):
             user='psycopg', ))
 
     for pyver in pyvers:
-        for pgver in pgvers:
+        for pgver in use_pgvers:
             add_test(slave, dotted(pyver), dotted(pgver))
 
     return slave
