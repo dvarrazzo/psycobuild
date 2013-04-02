@@ -95,7 +95,7 @@ def all_pg_py_combos(slave):
                 ))
 
     # increase concurrency by using databases in different orders
-    if slave.slavename == 'ubuntu64':
+    if '64' in slave.slavename:
         use_pgvers = pgvers[len(pgvers) // 2:] + pgvers[:len(pgvers) // 2]
     else:
         use_pgvers = pgvers
