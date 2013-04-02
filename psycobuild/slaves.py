@@ -75,7 +75,7 @@ maya = create_slave("maya", max_builds=1)
 
 # Two slaves to test an exhaustive combination of PG/Py
 
-pyvers = [ '24', '25', '26', '27', '31', '32', '33']
+pyvers = [ '25', '26', '27', '31', '32', '33']
 pgvers = [ '74', '80', '81', '82', '83', '84', '90', '91', '92' ]
 
 def dotted(s):
