@@ -1,7 +1,8 @@
 """Buildbot configuration file for Psycopg."""
 
 repourl = "git://github.com/dvarrazzo/psycopg.git"
-branch = "master"
+branch = "maint_2_6"
+#branch = "master"
 
 import os
 
