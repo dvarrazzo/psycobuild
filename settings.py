@@ -103,7 +103,7 @@ def make_sdist(slave):
 def make_test_sdist(slave):
     builders = {}   # py name -> builder
 
-    for py, pg in sorted(slave.tested_pairs):
+    for py, pg in slave.tested_pairs:
 
         py = slave.pys[py]
         pg = slave.pgs[pg]
