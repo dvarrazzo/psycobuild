@@ -2,7 +2,8 @@
 # ex: set syntax=python:
 
 
-basedir = r'/var/lib/buildbot/psycobuild/master'
+# basedir = r'/var/lib/buildbot/psycobuild/master'
+basedir = r'/home/psycoweb/psycobuild/var/master'
 
 rotateLength = 1000000
 maxRotatedFiles = None
