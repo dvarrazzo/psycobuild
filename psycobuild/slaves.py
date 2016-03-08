@@ -83,15 +83,18 @@ def dotted(s):
     return s[0] + '.' + s[1]
 
 def all_pg_py_combos(slave):
+    # Test with the LO64 on Py 64 bits
+    if '64' in slave.slavename:
+        pg_config = '/usr/local/pg93/bin/pg_config'
+    else:
+        pg_config = None
+
     for pyver in pyvers:
         add_python(slave,
             PythonInstance(dotted(pyver),
                 executable='/usr/local/py%s/bin/python%s'
                     % (pyver, pyver[0] == '3' and '3' or ''),
-                # use the system pg_config
-                # from psycopg 2.4.1 we can use 8.4 to talk to 9.0
-                # without breaking bytea
-                # pg_config='/usr/local/pg90/bin/pg_config',
+                pg_config=pg_config,
                 ))
 
     # increase concurrency by using databases in different orders
